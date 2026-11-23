@@ -121,12 +121,23 @@
     </ul>
   </div>
 
+  <div class="sites" id="colin">
+    <h2>Colin transcript collector</h2>
+    <p>Once an hour, while this browser is open, saves the transcripts listed in <code>Colin/wanted.json</code> to <code>Colin/Transcripts</code> in your OneDrive, and recycles them once Colin is done.</p>
+    <label for="colin-home">Your OneDrive address</label>
+    <input id="colin-home" type="url" placeholder="https://yourorg-my.sharepoint.com/personal/you_yourorg_com" style="width:100%;box-sizing:border-box;margin:4px 0 8px;font:12px inherit;padding:4px 6px">
+    <label><input id="colin-on" type="checkbox"> On</label>
+    <button id="colin-run" type="button" style="float:right">Run now</button>
+    <div id="colin-last" style="clear:both;margin-top:8px;font-size:11px"></div>
+  </div>
+
   <nav>
     <a href="https://teamsvideotranscriptexporter.com" target="_blank" rel="noopener noreferrer">Website</a>
     <a href="https://github.com/brendangooden/ms-teams-sharepoint-downloader" target="_blank" rel="noopener noreferrer">GitHub &#9733;</a>
     <a class="report" href="https://github.com/brendangooden/ms-teams-sharepoint-downloader/issues/new?template=bug_report.yml" target="_blank" rel="noopener noreferrer">Report a bug</a>
   </nav>
 
+  <script src="colin-core.js"></script>
   <script src="popup.js"></script>
 </body>
 </html>

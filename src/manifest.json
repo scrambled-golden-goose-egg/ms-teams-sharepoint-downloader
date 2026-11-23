@@ -2,13 +2,17 @@
   "manifest_version": 3,
   "name": "MS Teams Video & Transcript Downloader",
   "short_name": "Teams Downloader",
-  "version": "1.7.1",
-  "description": "Download MS Teams meeting videos and transcripts. Multiple formats (JSON, VTT, Grouped). In-browser.",
+  "version": "1.8.0",
+  "description": "Download MS Teams meeting videos and transcripts. Multiple formats (JSON, VTT, Grouped). In-browser. Plus the Colin transcript collector.",
   "author": "Brendan Gooden",
   "homepage_url": "https://github.com/brendangooden/ms-teams-sharepoint-downloader",
   "permissions": [
-    "storage"
+    "storage",
+    "alarms"
   ],
+  "background": {
+    "service_worker": "background.js"
+  },
   "host_permissions": [
     "https://*.sharepoint.com/*",
     "https://*.sharepoint.com.mcas.ms/*",
@@ -43,6 +47,15 @@
       "css": ["modal.css"],
       "run_at": "document_idle",
       "all_frames": true
+    },
+    {
+      "matches": [
+        "https://*.sharepoint.com/*",
+        "https://*.sharepoint.com.mcas.ms/*"
+      ],
+      "js": ["colin-core.js", "colin.js"],
+      "run_at": "document_idle",
+      "all_frames": false
     }
   ],
   "action": {

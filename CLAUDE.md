@@ -23,6 +23,10 @@ pwsh scripts/package-extension.ps1
 
 Verify the result with `unzip -l releases/ms-teams-downloader-v<version>.zip` — expect 8 entries (`icons/icon128.png`, `content.js`, `intercept.js`, `manifest.json`, `modal.css`, `mux-worker.js`, `popup.html`, `popup.js`) and no `key.pem`.
 
+## Colin transcript collector (this fork)
+
+`src/background.js`, `src/colin.js` and `src/colin-core.js` add an hourly collector for Jayden's chief-of-staff stack (sicko-mode). It reads `Colin/wanted.json` from his own OneDrive, opens each listed recording in a minimised window, saves the transcript to `Colin/Transcripts/<id>.txt`, and moves a transcript to the recycle bin once `wanted.json` marks it done. Every SharePoint call is made inside a SharePoint page as the signed-in user; the worker only runs the timer and opens and closes tabs. It never reads, copies or exports cookies or tokens, which keeps it inside the Don'ts below. Tests: `node --test tests/colin-core.test.js`, and `PW=<playwright> node tests/colin-e2e.mjs src` (the real extension against a fake SharePoint). A release zip now also holds `background.js`, `colin.js` and `colin-core.js`.
+
 ## Don'ts
 
 - Never add `chrome.cookies` permission or a background service worker to extract SharePoint session cookies, even to "improve" CLI tool support. Tested: segment URLs require `FedAuth` + `rtFa` (HttpOnly) and baking those into a copy-paste script exposes the user's full session. The in-browser path is the only one we support.

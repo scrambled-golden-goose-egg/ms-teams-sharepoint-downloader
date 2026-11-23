@@ -1,5 +1,7 @@
 # MS Teams / SharePoint / Stream — Video & Transcript Downloader (Chrome Extension)
 
+> **This fork adds the Colin transcript collector** (branch `colin-collector`). Once an hour, while the browser is open, it saves the transcripts listed in `Colin/wanted.json` in your OneDrive to `Colin/Transcripts`, and recycles each one once it is marked done. Install: download this branch as a ZIP, unzip it, open `edge://extensions` (or `chrome://extensions`), turn on Developer mode, choose **Load unpacked** and pick the `src` folder. Turn off the Web Store copy of the downloader so the two don't both add buttons. Then open the extension's toolbar popup, paste your OneDrive address (`https://<org>-my.sharepoint.com/personal/<you>`), tick **On** and press **Run now**. Everything else below is the original extension, unchanged.
+
 [![Chrome Web Store](https://img.shields.io/chrome-web-store/v/hmljlkhcebhkkhbbafiheolbneecoinp?label=chrome%20web%20store&logo=googlechrome&logoColor=white&color=4285F4)](https://chromewebstore.google.com/detail/ms-teams-transcript-downl/hmljlkhcebhkkhbbafiheolbneecoinp)
 [![Users](https://img.shields.io/chrome-web-store/users/hmljlkhcebhkkhbbafiheolbneecoinp?label=users&color=34A853)](https://chromewebstore.google.com/detail/ms-teams-transcript-downl/hmljlkhcebhkkhbbafiheolbneecoinp)
 [![Rating](https://img.shields.io/chrome-web-store/rating/hmljlkhcebhkkhbbafiheolbneecoinp?label=rating&color=FBBC04)](https://chromewebstore.google.com/detail/ms-teams-transcript-downl/hmljlkhcebhkkhbbafiheolbneecoinp/reviews)
