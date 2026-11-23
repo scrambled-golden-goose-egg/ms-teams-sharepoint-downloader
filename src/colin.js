@@ -10,10 +10,21 @@
   if (window.top !== window) return;
   const core = self.ColinCore;
 
-  chrome.runtime.sendMessage({ type: 'colin-role' }, (r) => {
-    if (chrome.runtime.lastError || !r) return;
+  const log = (...a) => console.debug('[Colin collector]', ...a);
+  // The role arrives either as the answer to our ask or pushed by the worker once the page has
+  // loaded, whichever is first; it starts once.
+  let started = false;
+  function start(r) {
+    if (started || !r || (r.role !== 'home' && r.role !== 'fetch')) return;
+    started = true;
+    log('role', r.role, r.id || '');
     if (r.role === 'home') home();
     if (r.role === 'fetch') fetchTranscript(r);
+  }
+  chrome.runtime.onMessage.addListener((msg) => { if (msg && msg.type === 'colin-start') start(msg); return false; });
+  chrome.runtime.sendMessage({ type: 'colin-role' }, (r) => {
+    if (chrome.runtime.lastError) return log('no role', chrome.runtime.lastError.message);
+    start(r);
   });
 
   // ---------- home: the user's own OneDrive ----------

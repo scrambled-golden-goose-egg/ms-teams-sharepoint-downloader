@@ -18,10 +18,29 @@ chrome.runtime.onInstalled.addListener(schedule);
 chrome.runtime.onStartup.addListener(schedule);
 chrome.alarms.onAlarm.addListener((a) => { if (a.name === ALARM) run('timer'); });
 
+// A page may ask for its role a moment before the worker has written it down, so wait up to 3
+// seconds before saying it has none. Every other SharePoint page the user browses gets 'none'.
+function roleFor(tabId) {
+  return new Promise((resolve) => {
+    const start = Date.now();
+    const look = () => {
+      if (roles.has(tabId)) return resolve(roles.get(tabId));
+      if (!running || Date.now() - start > 3000) return resolve({ role: 'none' });
+      setTimeout(look, 100);
+    };
+    look();
+  });
+}
+
+// And once a collector tab has loaded, tell it its role as well, in case its own ask went astray.
+chrome.tabs.onUpdated.addListener((tabId, info) => {
+  if (info.status === 'complete' && roles.has(tabId)) chrome.tabs.sendMessage(tabId, Object.assign({ type: 'colin-start' }, roles.get(tabId)), () => void chrome.runtime.lastError);
+});
+
 chrome.runtime.onMessage.addListener((msg, sender, reply) => {
   if (!msg || typeof msg.type !== 'string' || !msg.type.startsWith('colin-')) return false;
   const tabId = sender.tab && sender.tab.id;
-  if (msg.type === 'colin-role') { reply(roles.get(tabId) || { role: 'none' }); return false; }
+  if (msg.type === 'colin-role') { roleFor(tabId).then(reply); return true; }
   if (msg.type === 'colin-run-now') { run('button').then(reply); return true; }
   if (tabId != null && waiters.has(tabId)) { waiters.get(tabId)(msg); waiters.delete(tabId); }
   return false;
@@ -66,13 +85,10 @@ async function runOnce(why) {
   const results = {};
   let win = null;
   try {
-    // Each tab opens blank and is given its role before the page loads, so a fast page can never
-    // ask for its role before the worker knows it.
-    win = await chrome.windows.create({ url: 'about:blank', state: 'minimized', focused: false });
+    win = await chrome.windows.create({ url: home + '/_layouts/15/onedrive.aspx', state: 'minimized', focused: false });
     const homeTab = win.tabs[0].id;
-    roles.set(homeTab, { role: 'home' });
     const homeReady = waitFor(homeTab, 60000);
-    await chrome.tabs.update(homeTab, { url: home + '/_layouts/15/onedrive.aspx' });
+    roles.set(homeTab, { role: 'home' });
     const ready = await homeReady;
     if (ready.type !== 'colin-home-ready') throw new Error('OneDrive did not open (signed out?)');
 
@@ -88,10 +104,9 @@ async function runOnce(why) {
     }
 
     for (const w of plan.fetch) {
-      const tab = await chrome.tabs.create({ windowId: win.id, url: 'about:blank', active: false });
-      roles.set(tab.id, { role: 'fetch', id: w.id, subject: w.subject });
+      const tab = await chrome.tabs.create({ windowId: win.id, url: w.url, active: false });
       const pending = waitFor(tab.id, core.FETCH_TIMEOUT_MS);
-      await chrome.tabs.update(tab.id, { url: w.url });
+      roles.set(tab.id, { role: 'fetch', id: w.id, subject: w.subject });
       const got = await pending;
       chrome.tabs.remove(tab.id).catch(() => {});
       roles.delete(tab.id);
