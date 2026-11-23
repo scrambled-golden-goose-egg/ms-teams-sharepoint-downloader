@@ -29,9 +29,12 @@ test('wanted.json: malformed entries are dropped, never guessed', () => {
 
 test('each run fetches what is missing, up to five, and recycles what is done', () => {
   const items = [1, 2, 3, 4, 5, 6, 7].map((n) => rec('r-179500' + n)).concat([rec('r-1795099', { done: true }), rec('r-1795098', { done: true })]);
-  const plan = core.plan(items, ['r-1795001.txt', 'r-1795099.txt'], { 'r-1795002': 3 });
+  const now = Date.parse('2026-11-24T06:00:00Z');
+  const plan = core.plan(items, ['r-1795001.txt', 'r-1795099.txt'], { 'r-1795002': { n: 3, at: now - 3600000 } }, now);
   assert.deepEqual(plan.fetch.map((w) => w.id), ['r-1795003', 'r-1795004', 'r-1795005', 'r-1795006', 'r-1795007']);
   assert.deepEqual(plan.recycle.map((w) => w.id), ['r-1795099'], 'a done one that was never saved has nothing to recycle');
+  const nextDay = core.plan([rec('r-1795002')], [], { 'r-1795002': { n: 3, at: now - 3600000 } }, now + 86400000);
+  assert.deepEqual(nextDay.fetch.map((w) => w.id), ['r-1795002'], 'three failures rest a day, then it tries again');
 });
 
 test('the transcript becomes one paragraph per turn, with times', () => {

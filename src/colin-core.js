@@ -50,12 +50,15 @@
 
   core.fileName = (id) => id + '.txt';
 
-  // What this run does: transcripts still wanted that are not saved yet (skipping any that have
-  // failed MAX_ATTEMPTS times), and saved transcripts Colin has finished with.
-  core.plan = function (items, savedNames, attempts) {
+  // What this run does: transcripts still wanted that are not saved yet (resting any that failed
+  // MAX_ATTEMPTS times until a day after the last try, so signing in later still brings them), and
+  // saved transcripts Colin has finished with. `attempts`: { id: { n, at } }.
+  core.plan = function (items, savedNames, attempts, nowMs) {
     const saved = new Set(savedNames);
+    const now = nowMs || Date.now();
+    const resting = (id) => { const a = attempts[id]; return a && a.n >= core.MAX_ATTEMPTS && now - a.at < 86400000; };
     const fetch = items
-      .filter((w) => !w.done && !saved.has(core.fileName(w.id)) && (attempts[w.id] || 0) < core.MAX_ATTEMPTS)
+      .filter((w) => !w.done && !saved.has(core.fileName(w.id)) && !resting(w.id))
       .slice(0, core.MAX_PER_RUN);
     const recycle = items.filter((w) => w.done && saved.has(core.fileName(w.id)));
     return { fetch, recycle };

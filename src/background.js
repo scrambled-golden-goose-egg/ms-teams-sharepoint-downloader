@@ -100,7 +100,8 @@ async function runOnce(why) {
         results[w.id] = up.ok ? { status: 'saved' } : { status: 'error', error: up.error };
         if (up.ok) delete colinAttempts[w.id];
       } else {
-        colinAttempts[w.id] = (colinAttempts[w.id] || 0) + 1;
+        const prev = colinAttempts[w.id];
+        colinAttempts[w.id] = { n: (prev && prev.n >= core.MAX_ATTEMPTS ? 0 : (prev ? prev.n : 0)) + 1, at: Date.now() };
         results[w.id] = { status: got.type === 'colin-timeout' ? 'timeout' : (got.status || 'error'), error: got.error || 'The recording page did not give a transcript (signed out of that organisation?)' };
       }
     }
